@@ -1,5 +1,6 @@
 import streamlit as st
 import plotly.express as px
+from backend import get_data
 
 
 st.title("Weather forecasting for the Next Days")
@@ -9,13 +10,32 @@ option = st.selectbox("select date to view: ", ("Temperature" , "Sky") )
 
 st.subheader(f"{option} for the next {days} days in {place}")
 
-def get_data(days):                                     #temporary dates and temperatures to sync slider with line graph
+if place:
+    try:
 
-    dates = ["2026-05-02", "2026-05-03", "2026-05-04"]
-    temperatures = [10, 12, 15]
-    temperatures = [days*i for i in temperatures ]
-    return dates , temperatures
-d, t = get_data(days)
+        filtered_data = get_data(place, days)
 
-figure = px.line(x=d, y=t , labels={"x": "Dates", "y": "Temperature(C)"})                     #plotly data frame for  graphs
-st.plotly_chart(figure)
+        if option == "Temperature":
+
+            temperatures = [dict["main"]["temp"] / 10 for dict in filtered_data ]    # from dictionary we get main dictionary, and
+                                                                                # from main dictionary we get temp key
+            dates = [dict["dt_txt"] for dict in filtered_data ]
+
+            figure = px.line(x=dates, y=temperatures , labels={"x": "Dates", "y": "Temperature(C)"})
+
+            st.plotly_chart(figure)                                             #plotly data frame for  graphs
+
+        if option == "Sky":
+
+            images = {"Clear": "images/clear.png", "Clouds": "images/cloud.png",
+                      "Rain": "images/rain.png", "Snow": "images/snow.png"}
+
+            sky_conditions = filtered_data = [dict["weather"][0]["main"] for dict in filtered_data]
+                                                                                # dict weather has a list main ,
+                                                                                # that is why we have [0] to select list
+                                                                                # and then select main key
+            image_paths = [images[condition] for condition in sky_conditions]
+
+            st.image(image_paths , width=115)                                   #to add images
+    except KeyError:
+        st.write("This place does not exist")
