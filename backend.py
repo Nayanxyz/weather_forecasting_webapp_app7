@@ -1,7 +1,8 @@
 import requests
+import streamlit as st
 
 
-API_KEY = "422daebb066f79393c16f0423f3467bn8"
+API_KEY = st.secrets["API_KEY"]
 
 def get_data(place, forecast_day=None):
     """ we have ["list"] key from debugger that has all the keys and dictionaries .
@@ -14,6 +15,7 @@ def get_data(place, forecast_day=None):
 
     data = response.json()
 
+
     filtered_data = data["list"]
 
     number_values = 8 * forecast_day                                      # 8* forecast day will give us temps or sky
@@ -23,4 +25,4 @@ def get_data(place, forecast_day=None):
     return filtered_data
 
 if __name__ == "__main__":
-    print(get_data(place="Tokyo", forecast_day=2, kind="Temperature"))
+    print(get_data(place="Tokyo", forecast_day=2))
